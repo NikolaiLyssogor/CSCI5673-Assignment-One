@@ -46,9 +46,6 @@ class CustomerDB:
     def get_seller_rating(self):
         raise NotImplementedError
 
-    def get_seller_rating(self):
-        raise NotImplementedError
-
     def get_num_items_sold(self):
         raise NotImplementedError
 
@@ -76,9 +73,9 @@ if __name__ == "__main__":
             new_sock, client_addr = sock.accept()
             print(f"Accepted connection from {client_addr}.")
             data = handler.recv(new_sock)
-            # route = db._route_request(data['route'])
-            # response = route(data)
-            # send_status = handler.send(new_sock, response)
+            route = db._route_request(data['route'])
+            response = route(data)
+            send_status = handler.send(new_sock, response)
             handler.send(new_sock, {"status":"success!"})
             new_sock.close()
             print(f"Disconnected from {client_addr}.")

@@ -67,8 +67,27 @@ class CustomerDB:
         
         return {'status': 'Error: Incorrect username or password.'}
 
-    def get_seller_rating(self):
-        raise NotImplementedError
+    def get_seller_rating(self, data: dict) -> dict:
+        """
+        Return the seller feedback of a the specified user.
+        """
+        # Find the user we're looking for
+        user_of_interest = None
+        for user in self.sellers:
+            if user['username'] == data['username']:
+                user_of_interest = user
+                break
+        
+        # Return the packet
+        if user_of_interest == None:
+            resp = {'status': 'Error: User not found.'}
+        else:
+            resp = {
+                'status': 'Success',
+                'user': user_of_interest 
+            }
+
+        return resp
 
     def get_num_items_sold(self):
         raise NotImplementedError

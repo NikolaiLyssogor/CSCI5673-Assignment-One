@@ -7,12 +7,13 @@ class SellerClient:
     def __init__(self):
         self.handler = TCPHandler()
         self.is_logged_in = False
+        self.username = ""
 
         self.routes = {
             'create account': self.create_account,
             'login': self.login,
             'logout': self.logout,
-            'get seller rating': self.get_rating,
+            'get seller rating': self.get_seller_rating,
             'sell item': self.sell_item,
             'remove item': self.remove_item,
             'list item': self.list_items,
@@ -78,15 +79,36 @@ class SellerClient:
             resp = self.handler.sendrecv(dest='seller_server', data=data)
 
             if 'Success' in resp['status']:
+                self.is_logged_in = True
+                self.username = data['username']
                 print("\nYou are now logged in!")
             else:
-                print(resp['status'])
+                print("\n", resp['status'])
 
     def logout(self):
         self.is_logged_in = False
+        print("\nYou are now logged out.")
 
-    def get_rating(self):
-        pass
+    def get_seller_rating(self):
+        """
+        Get the rating for the seller that is currently logged in.
+        """
+        if not self.is_logged_in:
+            print("\nYou must log in to view your rating.")
+        else:
+            data = {
+                'route': 'get_seller_rating',
+                'username': self.username
+            }
+            
+            # Send data to the server and get response back
+            resp = self.handler.sendrecv(dest='seller_server', data=data)
+            
+            if 'Error' in resp['status']:
+                print("\n", resp['status']),
+            else:
+                print(f"\nYou have {resp['pos']} thumbs up and {resp['neg']} thumbs down.")
+
 
     def sell_item(self):
         raise NotImplementedError
@@ -122,20 +144,11 @@ class SellerClient:
 
             self.routes[action]()
 
-    def serve_test(self):
-        raise NotImplementedError
-
 
 
 if __name__ == "__main__":
     seller = SellerClient()
-    if sys.argv[1] == 'debug':
-        seller.serve_debug()
-    elif sys.argv[1] == 'test':
-        seller.serve_test()
-    else:
-        print("Invalid command line argument supplied.")
-        exit(1)
+    seller.serve_debug()
 
 
 

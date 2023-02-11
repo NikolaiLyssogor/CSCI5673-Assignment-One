@@ -19,7 +19,7 @@ class SellerClient:
             'exit': None # handled differently due to different args
         }
 
-    def create_account(self, debug: bool = True) -> bool:
+    def create_account(self, debug: bool = True):
         """
         Gets a username and password from the user and sends
         it to the server to be stored. 
@@ -33,43 +33,57 @@ class SellerClient:
         # User cannot create account if logged in
         if self.is_logged_in:
             print("You are already logged in. You cannot create an account.\n")
-            return False
+        else:
+            if debug == True:
+                # Get user input
+                print("Please provide a username and password.")
+                username = input("\nusername: ")
+                password = input("password: ")
 
-        if debug == True:
-            # Get user input
+                data = {
+                    'route': 'create_account',
+                    'username': username,
+                    'password': password
+                }
+
+                # Call the handler to send request and receive response
+                resp = self.handler.sendrecv(dest='seller_server', data=data)
+
+                if 'Success' in resp['status']:
+                    print("\nAccount created successfully!")
+                else:
+                    print(resp['status'])
+
+
+    def login(self):
+        """
+        Change the local state to reflect that the user
+        is logged in.
+        """
+        if self.is_logged_in:
+            print("You are already logged in.")
+        else:
+            # Get the username and password
             print("Please provide a username and password.")
             username = input("\nusername: ")
             password = input("password: ")
 
             data = {
-                'route': 'create_account',
+                'route': 'login',
                 'username': username,
                 'password': password
             }
 
-            # Get a connection and send the request to the server
-            sock = self.handler.get_conn(dest='seller_server')
-            self.handler.send(sock, data)
-
-            # Handle the response from the server
-            resp = self.handler.recv(sock)
-            sock.close()
+            # Call the handler to send request and receive response
+            resp = self.handler.sendrecv(dest='seller_server', data=data)
 
             if 'Success' in resp['status']:
-                return True
+                print("\nYou are now logged in!")
             else:
                 print(resp['status'])
-                return False
-
-        elif debug == False:
-            return False
-
-
-    def login(self, uname: str, pwd: str):
-        pass
 
     def logout(self):
-        pass
+        self.is_logged_in = False
 
     def get_rating(self):
         pass
@@ -95,7 +109,7 @@ class SellerClient:
         while True:
             # Get user input
             actions = list(self.routes.keys())
-            action = input(f"What would you like to do?\n{actions}\n")
+            action = input(f"\nWhat would you like to do?\n{actions}\n")
 
             # Check that action is valid
             if action not in actions:
@@ -106,9 +120,7 @@ class SellerClient:
             if action == 'exit':
                 exit()
 
-            result = self.routes[action](debug=True)
-            if result == False:
-                print("Action failed, try again.\n")
+            self.routes[action]()
 
     def serve_test(self):
         raise NotImplementedError

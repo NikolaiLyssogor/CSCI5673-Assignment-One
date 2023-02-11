@@ -53,15 +53,19 @@ class CustomerDB:
             'items_sold': 0
         })
 
-        print(self.sellers)
-
         return {'status': 'Success: Account created.'}
 
-    def login(self):
-        raise NotImplementedError
-
-    def logout(self):
-        raise NotImplementedError
+    def login(self, data: dict) -> dict:
+        """
+        Search the database for a user with the provided
+        username and password.
+        """
+        unm, pwd = data['username'], data['password']
+        for user in self.sellers:
+            if user['username'] == unm and user['password'] == pwd:
+                return {'status': 'Success: Logged in successfully.'}
+        
+        return {'status': 'Error: Incorrect username or password.'}
 
     def get_seller_rating(self):
         raise NotImplementedError

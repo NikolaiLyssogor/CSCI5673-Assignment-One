@@ -5,17 +5,6 @@ class SellerServer:
 
     def __init__(self):
         self.handler = TCPHandler()
-
-        # Used for routing clients' requests
-        self.routes = {
-            'create account': self.create_account,
-            'login': self.login,
-            'logout': self.logout
-            # 'get seller rating': self.get_rating,
-            # 'sell item': self.sell_item,
-            # 'remove item': self.remove_item,
-            # 'list item': self.list_items,
-        }
     
     def create_account(self, data: dict) -> dict:
         """
@@ -25,12 +14,8 @@ class SellerServer:
         :returns: A dictionary with one field containing a status
                   message.
         """
-        # Get a socket connected to the DB
-        db_socket = self.handler.get_conn('customer_db')
-        self.handler.send(db_socket, data)
-
-        # Get back the response
-        db_response = self.handler.recv(db_socket)
+        # Make a call to the customer database
+        db_response = self.handler.sendrecv(dest='customer_db', data=data)
 
         # Form the response to the client
         if 'Error' in db_response['status']:
@@ -38,15 +23,19 @@ class SellerServer:
         else:
             resp = {'status': 'Success: account created'}
 
-        db_socket.close()
-
         return resp
 
-    def login(self, uname: str, pwd: str):
-        pass
+    def login(self, data: dict) -> dict:
+        # Make a call to the customer database
+        db_response = self.handler.sendrecv(dest='customer_db', data=data)
 
-    def logout(self):
-        pass
+        # Form the response to the client
+        if 'Error' in db_response['status']:
+            resp = {'status': 'Error: database'}
+        else:
+            resp = {'status': 'Success: you logged in.'}
+
+        return resp
 
     def _route_request(self, route: str):
         """

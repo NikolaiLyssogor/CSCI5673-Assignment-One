@@ -76,3 +76,26 @@ class TCPHandler:
         
         # Decode the message into a dictionary
         return json.loads(msg.decode('utf-8'))
+
+    def sendrecv(self, dest: str, data: dict) -> dict:
+        """
+        Handles call and response over TCP.
+
+        :param dest: The server we're sending the request to.
+        :param data: The packet we're sending.
+
+        :return: The response as a dictionary. Usually a status message.
+        """
+        # Get a new socket for each request
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            # Connect to our destination port
+            sock.connect((self.address_book[dest]['host'],
+                          self.address_book[dest]['port']))
+
+            # Encode the message and send it 
+            msg = bytes(json.dumps(data), 'utf-8')
+            sock.sendall(msg)
+
+            # Receive the response and decoded it
+            resp = sock.recv(self.MSGLEN)
+            return json.loads(resp.decode('utf-8'))

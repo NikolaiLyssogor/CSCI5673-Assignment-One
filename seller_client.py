@@ -43,6 +43,7 @@ class SellerClient:
 
                 data = {
                     'route': 'create_account',
+                    'type': 'seller',
                     'username': username,
                     'password': password
                 }
@@ -71,6 +72,7 @@ class SellerClient:
 
             data = {
                 'route': 'login',
+                'type': 'seller',
                 'username': username,
                 'password': password
             }
@@ -111,7 +113,30 @@ class SellerClient:
 
 
     def sell_item(self):
-        raise NotImplementedError
+        """
+        Gather the attributes needed to list an item
+        for sale.
+        """
+        if not self.is_logged_in:
+            print("\nYou must be logged in to sell an item.")
+        else:
+            name = input("\nItem name: ")
+            category = int(input("\nItem category: "))
+            keywords = input("\nItem keywords: ").split(',')
+            condition = input("\nItem condition: ")
+            price = float(input("\nItem price: "))
+            quantity = int(input("\nItem quantity: "))
+
+            data = {
+                'name': name,
+                'category': category,
+                'keywords': keywords,
+                'condition': condition,
+                'price': price,
+                'quantity': quantity,
+                'seller': self.username
+            }
+
 
     def remove_item(self):
         raise NotImplementedError

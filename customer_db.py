@@ -30,28 +30,21 @@ class CustomerDB:
         self.sellers = []
         self.buyers = []
 
-    def _route_request(self, route: str):
-        """
-        Returns the appropriate function if it exists,
-        otherwise returns None.
-        """
-        if hasattr(self, route):
-            return getattr(self, route)
-        else:
-            return None
-
     def create_account(self, data: dict) -> dict:
         if 'username' not in data.keys() or 'password' not in data.keys():
             return {'status': 'Error: Invalid packet supplied to create_account.'}
 
-        # Add the new user
-        self.sellers.append({
-            'username': data['username'],
-            'password': data['password'],
-            'id': len(self.sellers) + 1,
-            'feedback': {'pos': 0, 'neg': 0},
-            'items_sold': 0
-        })
+        if data['type'] == 'seller':
+            # Add the new user
+            self.sellers.append({
+                'username': data['username'],
+                'password': data['password'],
+                'id': len(self.sellers) + 1,
+                'feedback': {'pos': 0, 'neg': 0},
+                'items_sold': 0
+            })
+        elif data['type'] == 'buyer':
+            pass
 
         return {'status': 'Success: Account created.'}
 
@@ -61,7 +54,9 @@ class CustomerDB:
         username and password.
         """
         unm, pwd = data['username'], data['password']
-        for user in self.sellers:
+        users = self.sellers if data['type'] == 'seller' else self.buyers
+
+        for user in users:
             if user['username'] == unm and user['password'] == pwd:
                 return {'status': 'Success: Logged in successfully.'}
         
@@ -97,6 +92,16 @@ class CustomerDB:
 
     def get_num_items_bought(self):
         raise NotImplementedError
+
+    def _route_request(self, route: str):
+        """
+        Returns the appropriate function if it exists,
+        otherwise returns None.
+        """
+        if hasattr(self, route):
+            return getattr(self, route)
+        else:
+            return None
 
     def serve(self):
         # Get a listening socket from the TCPHandler

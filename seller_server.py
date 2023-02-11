@@ -39,6 +39,13 @@ class SellerServer:
         }
         return resp
 
+    def sell_item(self, data: dict) -> dict:
+        """
+        Adds the item to the product database and the item's
+        ID to the list of items for sale by this user.
+        """
+        raise NotImplementedError
+
     def _route_request(self, route: str):
         """
         Returns the appropriate function if it exists,

@@ -32,30 +32,30 @@ class SellerClient:
         """
         # User cannot create account if logged in
         if self.is_logged_in:
-            print("You are already logged in. You cannot create an account.")
+            print("You are already logged in. You cannot create an account.\n")
             return False
 
         if debug == True:
             # Get user input
-            print("Pleas provide a username and password.")
-            username = input("username: ")
+            print("Please provide a username and password.")
+            username = input("\nusername: ")
             password = input("password: ")
 
             data = {
-                'header': 'create_account',
+                'route': 'create_account',
                 'username': username,
                 'password': password
             }
 
             # Get a connection and send the request to the server
-            sock = self.handler.get_conn(dest='seller')
+            sock = self.handler.get_conn(dest='seller_server')
             self.handler.send(sock, data)
 
             # Handle the response from the server
             resp = self.handler.recv(sock)
             sock.close()
 
-            if resp['status'] == 'success':
+            if 'Success' in resp['status']:
                 return True
             else:
                 print(resp['status'])
@@ -108,7 +108,7 @@ class SellerClient:
 
             result = self.routes[action](debug=True)
             if result == False:
-                print("Action failed, try again.")
+                print("Action failed, try again.\n")
 
     def serve_test(self):
         raise NotImplementedError

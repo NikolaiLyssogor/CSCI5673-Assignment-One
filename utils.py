@@ -8,6 +8,7 @@ class TCPHandler:
     """
 
     def __init__(self):
+        # Size of TCP packets in bytes
         self.MSGLEN = 2048
 
         # Hostname and port no. of the frontend seller server
@@ -17,28 +18,24 @@ class TCPHandler:
             'buyer_server': {'host': 'localhost', 'port': None},
             'products_db': {'host': 'localhost', 'port': None}
         }
-        self.SELHOST = 'localhost'
-        self.SELPORT = 65430
 
     def get_conn(self, dest: str) -> socket.socket:
         """
         Used by clients to connect to the seller server or 
         the buyer server.
 
-        :param dest: One of 'seller', or 'buyer'.
+        :param dest: One of 'seller', 'buyer', 'customer_db', or 'product_db'.
         returns: A socket connected to the destination.
         """
-        if dest not in ['seller', 'buyer']:
+        if dest not in ['seller_server', 'buyer_sever', 'customer_db', 'product_db']:
             raise ValueError("invalid destination supplied.")
         
-        if dest == 'seller':
-            new_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            new_sock.connect((self.SELHOST, self.SELPORT))
-            return new_sock
-        elif dest == 'buyer':
-            raise NotImplementedError
+        new_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        new_sock.connect((self.address_book[dest]['host'],
+                          self.address_book[dest]['port']))
+        return new_sock
 
-    def listen(self, host: str) -> socket.socket:
+    def get_listener(self, host: str) -> socket.socket:
         """
         Returns an appropriate listening socket for the server
         specified as host.
@@ -51,8 +48,12 @@ class TCPHandler:
         if host not in ['customer_db', 'seller_server',
                         'buyer_server', 'products_db']:
             raise ValueError("invalid host supplied")
-        
 
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.bind((self.address_book[host]['host'],
+                   self.address_book[host]['port']))
+        sock.listen(5)
+        return sock
 
     def send(self, sock: socket.socket, data: dict) -> None:
         """
@@ -72,6 +73,6 @@ class TCPHandler:
         """
         # Receive the message from the socket
         msg = sock.recv(self.MSGLEN)
-
+        
         # Decode the message into a dictionary
         return json.loads(msg.decode('utf-8'))

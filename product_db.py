@@ -76,7 +76,13 @@ class ProductDB:
         }
 
         return resp
-        
+
+    def search(self, data: dict) -> dict:
+        """
+        Simply return the products. Processing happens
+        on the buyer server.
+        """
+        return {'data': self.products}
 
     def _route_request(self, route: str):
         """

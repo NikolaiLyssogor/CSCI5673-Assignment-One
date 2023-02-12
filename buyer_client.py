@@ -17,7 +17,7 @@ class BuyerClient:
             'create account': self.create_account,
             'login': self.login,
             'logout': self.logout,
-            # 'search items': self.search,
+            'search items': self.search,
             # 'add item to cart': self.add_item_to_cart,
             # 'remove item from cart': self.remove_item,
             # 'display cart': self.display_cart,
@@ -97,6 +97,36 @@ class BuyerClient:
     def logout(self):
         self.is_logged_in = False
         print("\nYou are now logged out.")
+
+    def search(self):
+        """
+        Search for items based on keywords.
+        """
+        print("Please provide the following information.")
+        category = int(input("\nCategory (0-9): "))
+        keywords = input("Keywords: ").split(',')
+
+        data = {
+            'route': 'search',
+            'data': {
+                'category': category,
+                'keywords': keywords
+            }
+        }
+
+        try:
+            resp = self.handler.sendrecv('buyer_server', data)
+            if 'Error' in resp['status']:
+                print(resp['status'])
+            else:
+                if not resp['data']:
+                    print("\nYour search did not return any results. Try a different query.")
+                else:
+                    for item in resp['data']:
+                        print("")
+                        pp.pprint(item)
+        except:
+            print('Error: Connection or server failed.')
 
     def _get_route(self, route: str):
         return self.routes[route]

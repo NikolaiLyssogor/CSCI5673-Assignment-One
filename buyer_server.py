@@ -24,6 +24,38 @@ class BuyerServer:
         # Make a call to the customer database
         return self.handler.sendrecv(dest='customer_db', data=data)
 
+    def search(self, data: dict) -> dict:
+        """
+        Returns an item as a search result if either the 
+        category matches or at least one of the keywords
+        match.
+        """
+        # Get all the items from the database
+        db_req = {'route': 'search'}
+        # try:
+        all_items = self.handler.sendrecv('product_db', db_req)['data']
+
+        # Filtering criteria
+        category = data['data']['category']
+        keywords = data['data']['keywords']
+
+        # Filter the ones that meet the criteria
+        search_result = []
+        for product in all_items:
+            # Add the item if the category matches
+            if product['category'] == category:
+                search_result.append(product)
+                continue
+            
+            # Add item if any keywords match
+            if len(set(product['keywords']) & set(keywords)) > 0:
+                search_result.append(product)
+
+        # Send the response back
+        return {'status': 'Success', 'data': search_result}
+        # except:
+        #     return {'status': 'Error: Database'}
+
     def _route_request(self, route: str):
         """
         Returns the appropriate function if it exists,

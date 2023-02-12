@@ -97,6 +97,7 @@ class BuyerClient:
 
     def logout(self):
         self.is_logged_in = False
+        self.username = ""
         print("\nYou are now logged out.")
 
     def search(self):
@@ -219,7 +220,22 @@ class BuyerClient:
                 print(f"\nSeller with ID {seller_id} has {pos} thumbs up and {neg} thumbs down.")
 
     def get_purchase_history(self):
-        raise NotImplementedError
+        try:
+            data = {
+                'route': 'get_purchase_history',
+                'data': {'username': self.username}
+            }
+            resp = self.handler.sendrecv('buyer_server', data)
+        except:
+            print("\nThere was a problem with the server. Please try again.")
+        else:
+            print(resp)
+            if not resp['data']:
+                print("\nYou have not made any purchases.")
+            else:
+                for purchase in resp['data']:
+                    print("")
+                    pp.pprint(purchase)
 
     def _get_route(self, route: str):
         return self.routes[route]

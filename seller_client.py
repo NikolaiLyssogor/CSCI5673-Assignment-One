@@ -91,6 +91,7 @@ class SellerClient:
 
     def logout(self):
         self.is_logged_in = False
+        self.username = ""
         print("\nYou are now logged out.")
 
     def get_seller_rating(self):
@@ -137,7 +138,8 @@ class SellerClient:
                 'price': round(price, 2),
                 'quantity': quantity,
                 'seller': self.username,
-                'status': 'For Sale'
+                'status': 'For Sale',
+                'buyer': None
             }
             data = {
                 'route': 'sell_item',

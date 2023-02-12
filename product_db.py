@@ -17,6 +17,7 @@ class ProductDB:
             'price': 1.99
             'seller': 'Ashish Vaswani',         # Username of seller
             'status': 'For Sale'                # ['For Sale', 'Sold', 'Removed']
+            'buyer': None                       # Buyer name if status is 'Sold'
         }
         """
         self.handler = TCPHandler()

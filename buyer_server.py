@@ -102,6 +102,25 @@ class BuyerServer:
 
             return {'status': 'Error: Seller not found.'}
 
+    def get_purchase_history(self, data: dict) -> dict:
+        try:
+            db_req = {'route': 'search'}
+            products = self.handler.sendrecv('product_db', db_req)['data']
+        except:
+            print("Error connecting buyer server to customer database.")
+            return {'status': 'Error: Cannot connect buyer server to customer database.'}
+        else:
+            buyers_products = []
+            for product in products:
+                if product['buyer'] == data['data']['username']:
+                    buyers_products.append(product)
+
+            resp = {
+                'status': "Success: Here's your filthy data.",
+                'data': buyers_products
+            }
+            return resp
+
     def _route_request(self, route: str):
         """
         Returns the appropriate function if it exists,

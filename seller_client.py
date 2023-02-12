@@ -1,6 +1,9 @@
 import socket
 from utils import TCPHandler
 import sys
+import pprint
+
+pp = pprint.PrettyPrinter()
 
 class SellerClient:
 
@@ -151,10 +154,44 @@ class SellerClient:
 
 
     def remove_item(self):
-        raise NotImplementedError
+        """
+        Asks user for a list of item ids to remove from the 
+        database.
+        """
+        if not self.is_logged_in:
+            print("\nPlease log in first.")
+        else:
+            ids = input("\nEnter a list of item IDs you want to remove:\n")
+            ids = [int(i) for i in ids.split(',')]
+            req = {
+                'route': 'remove_item',
+                'data': {
+                    'ids': ids
+                }
+            }
+
+            resp = self.handler.sendrecv('seller_server', req)
+
+            print(f"\n{resp['status']}")
 
     def list_items(self):
-        raise NotImplementedError
+        """
+        Display items currently on sale by this seller.
+        """
+        data = {
+            'route': 'list_items',
+            'data': {'username': self.username}
+        }
+        resp = self.handler.sendrecv('seller_server', data)
+
+        if not resp['items']:
+            print("\nYou have no items for sale.")
+        else:
+            print("\nYou have the following items listed for sale:")
+            for item in resp['items']:
+                print('')
+                pp.pprint(item)
+
 
     def _get_route(self, route: str):
         return self.routes[route]

@@ -44,6 +44,39 @@ class ProductDB:
 
         return {'status': 'Sucess: Items listed.', 'ids': item_ids}
 
+    def remove_item(self, data: dict) -> dict:
+        ids = data['data']['ids']
+        items_removed = 0
+        
+        for item in self.products:
+            if item['id'] in ids:
+                item['status'] = 'Removed'
+                items_removed += 1
+
+        print(items_removed)
+        if items_removed == len(ids):
+            return {'status': 'Success: Items successfully removed.'}
+        else:
+            return {'status': 'Error: Some items may not have been removed.'}
+
+    def list_items(self, data: dict) -> dict:
+        """
+        Returns items for sale by the seller specified.
+        """
+        sellers_items = []
+        seller = data['data']['username']
+
+        for item in self.products:
+            if item['seller'] == seller and item['status'] == 'For Sale':
+                sellers_items.append(item)
+
+        resp = {
+            'status': 'Success',
+            'items': sellers_items
+        }
+
+        return resp
+        
 
     def _route_request(self, route: str):
         """

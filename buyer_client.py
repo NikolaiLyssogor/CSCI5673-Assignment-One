@@ -19,8 +19,9 @@ class BuyerClient:
             'logout': self.logout,
             'search items': self.search,
             'add item to cart': self.add_item_to_cart,
-            # 'remove item from cart': self.remove_item,
-            # 'display cart': self.display_cart,
+            'remove item from cart': self.remove_item_from_cart,
+            'clear cart': self.clear_cart,
+            'display cart': self.display_cart,
             # 'make purchase': self.make_purchase,
             # 'provide feedback': self.provide_feedback,
             # 'get seller rating': self.get_seller_rating,
@@ -159,6 +160,37 @@ class BuyerClient:
                 # Add the item to the cart
                 self.cart.append(resp['data'])
                 print(f"\nItem with ID {item_id} ({resp['data']['name']}) was added to the cart.")
+
+    def remove_item_from_cart(self):
+        """
+        Removes the item ID specified by the user from
+        the cart.
+        """
+        item_id = int(input("\nSpecify the ID of the item you wish to remove.\n"))
+        item_found = False
+
+        for item in self.cart:
+            if item['id'] == item_id:
+                self.cart.remove(item)
+                item_found = True
+                print(f"\nItem with ID {item_id} ({item['name']}) was removed from the cart.")
+                break
+
+        if not item_found:
+            print("\nThe item specified is not in your cart.")
+
+    def clear_cart(self):
+        self.cart = []
+        print("\nYour cart has been cleared.")
+
+    def display_cart(self):
+        if not self.cart:
+            print("\nYour cart is empty.")
+        else:
+            for item in self.cart:
+                print("")
+                pp.pprint(item)
+
 
     def _get_route(self, route: str):
         return self.routes[route]

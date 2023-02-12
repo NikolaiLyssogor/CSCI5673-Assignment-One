@@ -18,7 +18,7 @@ class BuyerClient:
             'login': self.login,
             'logout': self.logout,
             'search items': self.search,
-            # 'add item to cart': self.add_item_to_cart,
+            'add item to cart': self.add_item_to_cart,
             # 'remove item from cart': self.remove_item,
             # 'display cart': self.display_cart,
             # 'make purchase': self.make_purchase,
@@ -127,6 +127,38 @@ class BuyerClient:
                         pp.pprint(item)
         except:
             print('Error: Connection or server failed.')
+
+    def add_item_to_cart(self):
+        """
+        User provides an item ID and the item is added to 
+        the local shopping cart. Checks if item exists in
+        the database before doing so.
+
+        Note: This function differs from the assignment's
+        specification in that because all items have their
+        own uniuqe ID, a buyer will have to specify the ID
+        for each item individually, even if some of those
+        items are the same type of product.
+        """
+        if not self.is_logged_in:
+            print("\nYou must log in before adding items to your cart.")
+        else:
+            # Get user input
+            item_id = int(input("\nPlease provide the ID for the item you wish to purchase.\n"))
+
+            # Check if the item exists in the database
+            try:
+                data = {
+                    'route': 'check_if_item_exists',
+                    'data': {'id': item_id}
+                }
+                resp = self.handler.sendrecv('buyer_server', data)
+            except:
+                print("\nThere was a problem with the server. Please try again.")
+            else:
+                # Add the item to the cart
+                self.cart.append(resp['data'])
+                print(f"\nItem with ID {item_id} ({resp['data']['name']}) was added to the cart.")
 
     def _get_route(self, route: str):
         return self.routes[route]

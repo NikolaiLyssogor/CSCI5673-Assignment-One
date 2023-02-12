@@ -32,29 +32,52 @@ class BuyerServer:
         """
         # Get all the items from the database
         db_req = {'route': 'search'}
-        # try:
-        all_items = self.handler.sendrecv('product_db', db_req)['data']
+        try:
+            all_items = self.handler.sendrecv('product_db', db_req)['data']
 
-        # Filtering criteria
-        category = data['data']['category']
-        keywords = data['data']['keywords']
+            # Filtering criteria
+            category = data['data']['category']
+            keywords = data['data']['keywords']
 
-        # Filter the ones that meet the criteria
-        search_result = []
-        for product in all_items:
-            # Add the item if the category matches
-            if product['category'] == category:
-                search_result.append(product)
-                continue
-            
-            # Add item if any keywords match
-            if len(set(product['keywords']) & set(keywords)) > 0:
-                search_result.append(product)
+            # Filter the ones that meet the criteria
+            search_result = []
+            for product in all_items:
+                # Add the item if the category matches
+                if product['category'] == category:
+                    search_result.append(product)
+                    continue
+                
+                # Add item if any keywords match
+                if len(set(product['keywords']) & set(keywords)) > 0:
+                    search_result.append(product)
 
-        # Send the response back
-        return {'status': 'Success', 'data': search_result}
-        # except:
-        #     return {'status': 'Error: Database'}
+            # Send the response back
+            return {'status': 'Success', 'data': search_result}
+        except:
+            return {'status': 'Error: Database'}
+
+    def check_if_item_exists(self, data: dict) -> dict:
+        """
+        Gets all the products from the database and
+        checks if the specified product ID exists.
+        """
+        try:
+            db_req = {'route': 'search'}
+            all_products = self.handler.sendrecv('product_db', db_req)['data']
+        except:
+            return {'status': 'Error: Database connection.'}
+        else:
+            # Look for the product of interest
+            for product in all_products:
+                if product['id'] == data['data']['id']:
+                    resp = {
+                        'status': 'Success: Item found.',
+                        'data': product
+                    }
+                    return resp
+
+            # Item not found
+            return {'status': 'Error: Item not found.'}
 
     def _route_request(self, route: str):
         """

@@ -14,10 +14,10 @@ class Experiment:
         and one instance of the buyer.
         """
         # # Initialize server object
-        seller_client = SellerClient(debug = False)
-        # buyer_client = BuyerClient(debug = False)
-        seller_client.serve()
-        average_response_time = seller_client.benchmarker.compute_average_response_time()
+        # seller_client = SellerClient(debug = False)
+        buyer_client = BuyerClient(debug = False)
+        buyer_client.serve()
+        average_response_time = buyer_client.benchmarker.compute_average_response_time()
         print(f"The average response time was: {average_response_time}")
 
         # # Fork two processes in which to run the servers

@@ -1,7 +1,10 @@
 import socket
-from utils import TCPHandler
 import sys
 import pprint
+import time
+import random
+
+from utils import TCPHandler, ResponseTimeBenchmarker
 
 pp = pprint.PrettyPrinter()
 
@@ -10,6 +13,7 @@ class BuyerClient:
     def __init__(self, debug: bool = True):
         self.debug = debug
         self.handler = TCPHandler()
+        self.benchmarker = ResponseTimeBenchmarker()
         self.is_logged_in = False
         self.username = ""
         self.cart = []
@@ -45,11 +49,13 @@ class BuyerClient:
         if self.is_logged_in:
             print("You are already logged in. You cannot create an account.\n")
         else:
-            if self.debug == True:
+            if self.debug:
                 # Get user input
                 print("Please provide a username and password.")
                 username = input("\nusername: ")
                 password = input("password: ")
+            else:
+                username, password = self.benchmarker.get_username_and_password()
 
                 data = {
                     'route': 'create_account',
@@ -59,7 +65,12 @@ class BuyerClient:
                 }
 
                 # Call the handler to send request and receive response
+                start = time.time()
                 resp = self.handler.sendrecv(dest='buyer_server', data=data)
+                end = time.time()
+
+                if not self.debug:
+                    self.benchmarker.log_response_time(end-start)
 
                 if 'Success' in resp['status']:
                     print("\nAccount created successfully!")
@@ -74,10 +85,14 @@ class BuyerClient:
         if self.is_logged_in:
             print("\nYou are already logged in.")
         else:
-            # Get the username and password
-            print("Please provide a username and password.")
-            username = input("\nusername: ")
-            password = input("password: ")
+            if self.debug:
+                # Get the username and password
+                print("Please provide a username and password.")
+                username = input("\nusername: ")
+                password = input("password: ")
+            else:
+                # Login with any account that's already been created
+                username, password = random.choice(self.benchmarker.accounts)
 
             data = {
                 'route': 'login',
@@ -87,7 +102,12 @@ class BuyerClient:
             }
 
             # Call the handler to send request and receive response
+            start = time.time()
             resp = self.handler.sendrecv(dest='buyer_server', data=data)
+            end = time.time()
+
+            if not self.debug:
+                self.benchmarker.log_response_time(end-start)
 
             if 'Success' in resp['status']:
                 self.is_logged_in = True
@@ -105,9 +125,13 @@ class BuyerClient:
         """
         Search for items based on keywords.
         """
-        print("Please provide the following information.")
-        category = int(input("\nCategory (0-9): "))
-        keywords = input("Keywords: ").split(',')
+        if self.debug:
+            print("Please provide the following information.")
+            category = int(input("\nCategory (0-9): "))
+            keywords = input("Keywords: ").split(',')
+        else:
+            category = random.choice(range(10))
+            keywords = self.benchmarker.get_keywords()
 
         data = {
             'route': 'search',
@@ -118,7 +142,13 @@ class BuyerClient:
         }
 
         try:
+            start = time.time()
             resp = self.handler.sendrecv('buyer_server', data)
+            end = time.time()
+
+            if not self.debug:
+                self.benchmarker.log_response_time(end-start)
+
             if 'Error' in resp['status']:
                 print(resp['status'])
             else:
@@ -146,8 +176,11 @@ class BuyerClient:
         if not self.is_logged_in:
             print("\nYou must log in before adding items to your cart.")
         else:
-            # Get user input
-            item_id = int(input("\nPlease provide the ID for the item you wish to purchase.\n"))
+            if self.debug:
+                # Get user input
+                item_id = int(input("\nPlease provide the ID for the item you wish to purchase.\n"))
+            else:
+                item_id = random.choice(range(500))
 
             # Check if the item exists in the database
             try:
@@ -155,7 +188,14 @@ class BuyerClient:
                     'route': 'check_if_item_exists',
                     'data': {'id': item_id}
                 }
+
+                start = time.time()
                 resp = self.handler.sendrecv('buyer_server', data)
+                end = time.time()
+
+                if not self.debug:
+                    self.benchmarker.log_response_time(end-start)
+
             except:
                 print("\nThere was a problem with the server. Please try again.")
             else:
@@ -200,8 +240,11 @@ class BuyerClient:
         raise NotImplementedError
 
     def get_seller_rating_by_id(self):
-        # Get seller ID from user
-        seller_id = int(input("\nPlease provide the ID for the seller whose rating you wish to view.\n"))
+        if self.debug:
+            # Get seller ID from user
+            seller_id = int(input("\nPlease provide the ID for the seller whose rating you wish to view.\n"))
+        else:
+            seller_id = 0
 
         # Check if the item exists in the database
         try:
@@ -209,7 +252,14 @@ class BuyerClient:
                 'route': 'get_seller_rating_by_id',
                 'data': {'id': seller_id}
             }
+
+            start = time.time()
             resp = self.handler.sendrecv('buyer_server', data)
+            end = time.time()
+
+            if not self.debug:
+                self.benchmarker.log_response_time(end-start)
+
         except:
             print("\nThere was a problem with the server. Please try again.")
         else:
@@ -226,7 +276,14 @@ class BuyerClient:
                 'route': 'get_purchase_history',
                 'data': {'username': self.username}
             }
+
+            start = time.time()
             resp = self.handler.sendrecv('buyer_server', data)
+            end = time.time()
+
+            if not self.debug:
+                self.benchmarker.log_response_time(end-start)
+
         except:
             print("\nThere was a problem with the server. Please try again.")
         else:
@@ -264,8 +321,18 @@ class BuyerClient:
 
                 self.routes[action]()
         else:
-            pass
-
+            self.create_account()
+            time.sleep(0.01)
+            self.login()
+            time.sleep(0.01)
+            for _ in range(125):
+                self.search()
+                time.sleep(0.01)
+                self.add_item_to_cart()
+                time.sleep(0.01)
+                self.get_seller_rating_by_id()
+                time.sleep(0.01)
+                self.get_purchase_history()
 
 
 if __name__ == "__main__":

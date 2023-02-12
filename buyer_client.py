@@ -22,10 +22,10 @@ class BuyerClient:
             'remove item from cart': self.remove_item_from_cart,
             'clear cart': self.clear_cart,
             'display cart': self.display_cart,
-            # 'make purchase': self.make_purchase,
-            # 'provide feedback': self.provide_feedback,
-            # 'get seller rating': self.get_seller_rating,
-            # 'get purchase history': self.get_purchase_history,
+            'make purchase': self.make_purchase,
+            'provide feedback': self.provide_feedback,
+            'get seller rating': self.get_seller_rating_by_id,
+            'get purchase history': self.get_purchase_history,
             'exit': None # handled differently due to different args
         }
 
@@ -191,6 +191,35 @@ class BuyerClient:
                 print("")
                 pp.pprint(item)
 
+    def make_purchase(self):
+        raise NotImplementedError
+
+    def provide_feedback(self):
+        raise NotImplementedError
+
+    def get_seller_rating_by_id(self):
+        # Get seller ID from user
+        seller_id = int(input("\nPlease provide the ID for the seller whose rating you wish to view.\n"))
+
+        # Check if the item exists in the database
+        try:
+            data = {
+                'route': 'get_seller_rating_by_id',
+                'data': {'id': seller_id}
+            }
+            resp = self.handler.sendrecv('buyer_server', data)
+        except:
+            print("\nThere was a problem with the server. Please try again.")
+        else:
+            # Print the seller's rating
+            if 'Error' in resp['status']:
+                print("\n", resp['status'])
+            else:
+                pos, neg = resp['data']['pos'], resp['data']['neg']
+                print(f"\nSeller with ID {seller_id} has {pos} thumbs up and {neg} thumbs down.")
+
+    def get_purchase_history(self):
+        raise NotImplementedError
 
     def _get_route(self, route: str):
         return self.routes[route]

@@ -79,6 +79,29 @@ class BuyerServer:
             # Item not found
             return {'status': 'Error: Item not found.'}
 
+    def get_seller_rating_by_id(self, data: dict) -> dict:
+        try:
+            db_req = {'route': 'get_all_sellers'}
+            db_resp = self.handler.sendrecv('customer_db', db_req)
+        except:
+            print("Error connecting server to customer database.")
+            return {'status': 'Error: Cannot connect buyer server to customer database.'}
+        else:
+            seller_id = data['data']['id']
+            for seller in db_resp['data']:
+                if seller['id'] == seller_id:
+                    resp = {
+                        'status': db_resp['status'],
+                        'data': {
+                            'pos': seller['feedback']['pos'],
+                            'neg': seller['feedback']['neg']
+                        }
+                        
+                    }
+                    return resp
+
+            return {'status': 'Error: Seller not found.'}
+
     def _route_request(self, route: str):
         """
         Returns the appropriate function if it exists,

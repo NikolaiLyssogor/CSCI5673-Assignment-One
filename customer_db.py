@@ -89,6 +89,13 @@ class CustomerDB:
 
         return resp
 
+    def get_all_sellers(self, data: dict) -> dict:
+        data = {
+            'status': 'Success: Here ya go.',
+            'data': self.sellers
+        }
+        return data
+
     # def sell_item(self, data: dict) -> dict:
     #     """
     #     Append list of item ids for sale to user's database

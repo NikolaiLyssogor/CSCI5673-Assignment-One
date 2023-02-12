@@ -54,7 +54,6 @@ class ProductDB:
                 item['status'] = 'Removed'
                 items_removed += 1
 
-        print(items_removed)
         if items_removed == len(ids):
             return {'status': 'Success: Items successfully removed.'}
         else:

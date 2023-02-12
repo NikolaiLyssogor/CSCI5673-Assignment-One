@@ -96,22 +96,6 @@ class CustomerDB:
         }
         return data
 
-    # def sell_item(self, data: dict) -> dict:
-    #     """
-    #     Append list of item ids for sale to user's database
-    #     entry.
-    #     """
-    #     for seller in self.sellers:
-    #         if seller['username'] == data['username']:
-    #             seller['items_sold'] += data['ids']
-
-    #     resp = {
-    #         'status': 'Success: Items listed successfully',
-    #         'ids': data['ids']
-    #     }
-
-    #     return resp
-
     def get_num_items_sold(self):
         raise NotImplementedError
 

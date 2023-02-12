@@ -7,7 +7,8 @@ pp = pprint.PrettyPrinter()
 
 class BuyerClient:
 
-    def __init__(self):
+    def __init__(self, debug: bool = True):
+        self.debug = debug
         self.handler = TCPHandler()
         self.is_logged_in = False
         self.username = ""
@@ -29,7 +30,7 @@ class BuyerClient:
             'exit': None # handled differently due to different args
         }
 
-    def create_account(self, debug=True):
+    def create_account(self):
         """
         Gets a username and password from the user and sends
         it to the server to be stored. 
@@ -44,7 +45,7 @@ class BuyerClient:
         if self.is_logged_in:
             print("You are already logged in. You cannot create an account.\n")
         else:
-            if debug == True:
+            if self.debug == True:
                 # Get user input
                 print("Please provide a username and password.")
                 username = input("\nusername: ")
@@ -240,33 +241,36 @@ class BuyerClient:
     def _get_route(self, route: str):
         return self.routes[route]
 
-    def serve_debug(self):
+    def serve(self) -> int:
         """
         Runs the server in an interactive mode through the 
         command line. Pass 'test' as argv[1] for performance
         testing.
         """
-        while True:
-            # Get user input
-            actions = list(self.routes.keys())
-            action = input(f"\nWhat would you like to do?\n{actions}\n")
+        if self.debug:
+            while True:
+                # Get user input
+                actions = list(self.routes.keys())
+                action = input(f"\nWhat would you like to do?\n{actions}\n")
 
-            # Check that action is valid
-            if action not in actions:
-                print("\nUnknown action. Please select another.\n")
-                continue
+                # Check that action is valid
+                if action not in actions:
+                    print("\nUnknown action. Please select another.\n")
+                    continue
 
-            # Execute the action specified
-            if action == 'exit':
-                exit()
+                # Execute the action specified
+                if action == 'exit':
+                    exit()
 
-            self.routes[action]()
+                self.routes[action]()
+        else:
+            pass
 
 
 
 if __name__ == "__main__":
     seller = BuyerClient()
-    seller.serve_debug()
+    seller.serve()
 
 
 

@@ -45,17 +45,6 @@ class SellerServer:
         ID to the list of items for sale by this user. Returns
         the IDs of the items added.
         """
-        # # Add the items and get a list of item ids
-        # prodDB_resp = self.handler.sendrecv('product_db', data)
-
-        # # Packet to send to customer DB
-        # custDB_req = {
-        #     'route': 'sell_item',
-        #     'ids': prodDB_resp['ids'],
-        #     'username': data['data']['seller']
-        # }
-
-        # return self.handler.sendrecv('customer_db', custDB_req)
         return self.handler.sendrecv('product_db', data)
 
     def remove_item(self, data: dict) -> dict:
@@ -76,7 +65,6 @@ class SellerServer:
             return getattr(self, route)
         else:
             return None
-
 
     def serve(self):
         # Get a listening socket from the TCPHandler

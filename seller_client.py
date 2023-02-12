@@ -1,16 +1,22 @@
 import socket
-from utils import TCPHandler
 import sys
 import pprint
+import time
+import random
+import string
+
+from utils import TCPHandler, ResponseTimeBenchmarker
 
 pp = pprint.PrettyPrinter()
 
 class SellerClient:
 
-    def __init__(self):
+    def __init__(self, debug: bool = True):
         self.handler = TCPHandler()
+        self.benchmarker = ResponseTimeBenchmarker()
         self.is_logged_in = False
         self.username = ""
+        self.debug = debug
 
         self.routes = {
             'create account': self.create_account,
@@ -23,7 +29,7 @@ class SellerClient:
             'exit': None # handled differently due to different args
         }
 
-    def create_account(self, debug: bool = True):
+    def create_account(self):
         """
         Gets a username and password from the user and sends
         it to the server to be stored. 
@@ -38,26 +44,33 @@ class SellerClient:
         if self.is_logged_in:
             print("You are already logged in. You cannot create an account.\n")
         else:
-            if debug == True:
+            if self.debug == True:
                 # Get user input
                 print("Please provide a username and password.")
                 username = input("\nusername: ")
                 password = input("password: ")
+            else:
+                username, password = self.benchmarker.get_username_and_password()
 
-                data = {
-                    'route': 'create_account',
-                    'type': 'seller',
-                    'username': username,
-                    'password': password
-                }
+            data = {
+                'route': 'create_account',
+                'type': 'seller',
+                'username': username,
+                'password': password
+            }
 
-                # Call the handler to send request and receive response
-                resp = self.handler.sendrecv(dest='seller_server', data=data)
+            # Call the handler to send request and receive response
+            start = time.time()
+            resp = self.handler.sendrecv(dest='seller_server', data=data)
+            end = time.time()
 
-                if 'Success' in resp['status']:
-                    print("\nAccount created successfully!")
-                else:
-                    print(resp['status'])
+            if not self.debug:
+                self.benchmarker.log_response_time(end-start)
+
+            if 'Success' in resp['status']:
+                print("\nAccount created successfully!")
+            else:
+                print(resp['status'])
 
     def login(self):
         """
@@ -67,10 +80,14 @@ class SellerClient:
         if self.is_logged_in:
             print("You are already logged in.")
         else:
-            # Get the username and password
-            print("Please provide a username and password.")
-            username = input("\nusername: ")
-            password = input("password: ")
+            if self.debug:
+                # Get the username and password
+                print("Please provide a username and password.")
+                username = input("\nusername: ")
+                password = input("password: ")
+            else:
+                # Login with any account that's already been created
+                username, password = random.choice(self.benchmarker.accounts)
 
             data = {
                 'route': 'login',
@@ -80,7 +97,12 @@ class SellerClient:
             }
 
             # Call the handler to send request and receive response
+            start = time.time()
             resp = self.handler.sendrecv(dest='seller_server', data=data)
+            end = time.time()
+
+            if not self.debug:
+                self.benchmarker.log_response_time(end-start)
 
             if 'Success' in resp['status']:
                 self.is_logged_in = True
@@ -107,7 +129,12 @@ class SellerClient:
             }
             
             # Send data to the server and get response back
+            start = time.time()
             resp = self.handler.sendrecv(dest='seller_server', data=data)
+            end = time.time()
+
+            if not self.debug:
+                self.benchmarker.log_response_time(end-start)
             
             if 'Error' in resp['status']:
                 print("\n", resp['status']),
@@ -123,30 +150,49 @@ class SellerClient:
         if not self.is_logged_in:
             print("\nYou must be logged in to sell an item.")
         else:
-            name = input("\nItem name: ")
-            category = int(input("Item category: "))
-            keywords = input("Item keywords: ").split(',')
-            condition = input("Item condition: ")
-            price = float(input("Item price: "))
-            quantity = int(input("Item quantity: "))
+            if self.debug:
+                name = input("\nItem name: ")
+                category = int(input("Item category: "))
+                keywords = input("Item keywords: ").split(',')
+                condition = input("Item condition: ")
+                price = float(input("Item price: "))
+                quantity = int(input("Item quantity: "))
 
-            item = {
-                'name': name,
-                'category': category,
-                'keywords': keywords,
-                'condition': condition,
-                'price': round(price, 2),
-                'quantity': quantity,
-                'seller': self.username,
-                'status': 'For Sale',
-                'buyer': None
-            }
+                item = {
+                    'name': name,
+                    'category': category,
+                    'keywords': keywords,
+                    'condition': condition,
+                    'price': round(price, 2),
+                    'quantity': quantity,
+                    'seller': self.username,
+                    'status': 'For Sale',
+                    'buyer': None
+                }
+            else:
+                item = {
+                    'name': ''.join(random.choice(string.ascii_lowercase) for _ in range(10)),
+                    'category': random.choice(range(10)),
+                    'keywords': self.benchmarker.get_keywords(),
+                    'condition': random.choice(['New', 'Used']),
+                    'price': round(random.uniform(0, 100), 2),
+                    'quantity': random.choice(range(1,6)),
+                    'seller': self.username,
+                    'status': 'For Sale',
+                    'buyer': None
+                }
+
             data = {
                 'route': 'sell_item',
                 'data': item
             }
 
+            start = time.time()
             resp = self.handler.sendrecv(dest='seller_server', data=data)
+            end = time.time()
+
+            if not self.debug:
+                self.benchmarker.log_response_time(end-start)
 
             if 'Error' in resp['status']:
                 print("\nUnable to list items for sale. Try again.")
@@ -162,8 +208,13 @@ class SellerClient:
         if not self.is_logged_in:
             print("\nPlease log in first.")
         else:
-            ids = input("\nEnter a list of item IDs you want to remove:\n")
-            ids = [int(i) for i in ids.split(',')]
+            if self.debug:
+                ids = input("\nEnter a list of item IDs you want to remove:\n")
+                ids = [int(i) for i in ids.split(',')]
+            else:
+                # Randomly remove 2 items with ids in [0, 500]
+                ids = [random.choice(range(500)) for _ in range(2)]
+
             req = {
                 'route': 'remove_item',
                 'data': {
@@ -171,7 +222,12 @@ class SellerClient:
                 }
             }
 
+            start = time.time()
             resp = self.handler.sendrecv('seller_server', req)
+            end = time.time()
+
+            if not self.debug:
+                self.benchmarker.log_response_time(end-start)
 
             print(f"\n{resp['status']}")
 
@@ -183,7 +239,13 @@ class SellerClient:
             'route': 'list_items',
             'data': {'username': self.username}
         }
+
+        start = time.time()
         resp = self.handler.sendrecv('seller_server', data)
+        end = time.time()
+
+        if not self.debug:
+            self.benchmarker.log_response_time(end-start)
 
         if not resp['items']:
             print("\nYou have no items for sale.")
@@ -197,33 +259,49 @@ class SellerClient:
     def _get_route(self, route: str):
         return self.routes[route]
 
-    def serve_debug(self):
+    def serve(self):
         """
-        Runs the server in an interactive mode through the 
-        command line. Pass 'test' as argv[1] for performance
-        testing.
+        Runs the server either in an interactive mode for debugging
+        or an automated mode for performance testing.
         """
-        while True:
-            # Get user input
-            actions = list(self.routes.keys())
-            action = input(f"\nWhat would you like to do?\n{actions}\n")
+        if self.debug:
+            # Run in interactive terminal mode
+            while True:
+                # Get user input
+                actions = list(self.routes.keys())
+                action = input(f"\nWhat would you like to do?\n{actions}\n")
 
-            # Check that action is valid
-            if action not in actions:
-                print("\nUnknown action. Please select another.\n")
-                continue
+                # Check that action is valid
+                if action not in actions:
+                    print("\nUnknown action. Please select another.\n")
+                    continue
 
-            # Execute the action specified
-            if action == 'exit':
-                exit()
+                # Execute the action specified
+                if action == 'exit':
+                    exit()
 
-            self.routes[action]()
+                self.routes[action]()
+        else:
+            # Calls functions in a predetermined order
+            self.create_account()
+            time.sleep(0.01)
+            self.login()
+            time.sleep(0.01)
+            for _ in range(600):
+                self.sell_item()
+                time.sleep(0.01)
+            for _ in range(300):
+                self.remove_item()
+                time.sleep(0.02)
+            for _ in range(98):
+                self.list_items()
+                time.sleep(0.01)
 
 
 
 if __name__ == "__main__":
     seller = SellerClient()
-    seller.serve_debug()
+    seller.serve()
 
 
 

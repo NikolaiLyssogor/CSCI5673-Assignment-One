@@ -59,7 +59,6 @@ class SellerClient:
                 else:
                     print(resp['status'])
 
-
     def login(self):
         """
         Change the local state to reflect that the user

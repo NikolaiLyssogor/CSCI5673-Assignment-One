@@ -15,7 +15,7 @@ class TCPHandler:
         self.address_book = {
             'customer_db': {'host': 'localhost', 'port': 65432},
             'seller_server': {'host': 'localhost', 'port': 65431},
-            'buyer_server': {'host': 'localhost', 'port': None},
+            'buyer_server': {'host': 'localhost', 'port': 65429},
             'product_db': {'host': 'localhost', 'port': 65430}
         }
 

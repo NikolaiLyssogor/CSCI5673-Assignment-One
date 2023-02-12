@@ -41,10 +41,15 @@ class CustomerDB:
                 'password': data['password'],
                 'id': len(self.sellers) + 1,
                 'feedback': {'pos': 0, 'neg': 0},
-                'items_sold': []
+                'items_sold': 0
             })
         elif data['type'] == 'buyer':
-            pass
+            self.buyers.append({
+                'username': data['username'],
+                'password': data['password'],
+                'id': len(self.buyers) + 1,
+                'items_purchased': 0
+            })
 
         return {'status': 'Success: Account created.'}
 

@@ -121,21 +121,33 @@ class SellerClient:
             print("\nYou must be logged in to sell an item.")
         else:
             name = input("\nItem name: ")
-            category = int(input("\nItem category: "))
-            keywords = input("\nItem keywords: ").split(',')
-            condition = input("\nItem condition: ")
-            price = float(input("\nItem price: "))
-            quantity = int(input("\nItem quantity: "))
+            category = int(input("Item category: "))
+            keywords = input("Item keywords: ").split(',')
+            condition = input("Item condition: ")
+            price = float(input("Item price: "))
+            quantity = int(input("Item quantity: "))
 
-            data = {
+            item = {
                 'name': name,
                 'category': category,
                 'keywords': keywords,
                 'condition': condition,
-                'price': price,
+                'price': round(price, 2),
                 'quantity': quantity,
-                'seller': self.username
+                'seller': self.username,
+                'status': 'For Sale'
             }
+            data = {
+                'route': 'sell_item',
+                'data': item
+            }
+
+            resp = self.handler.sendrecv(dest='seller_server', data=data)
+
+            if 'Error' in resp['status']:
+                print("\nUnable to list items for sale. Try again.")
+            else:
+                print("\nSuccessfully added items with IDs ", resp['ids'])
 
 
     def remove_item(self):

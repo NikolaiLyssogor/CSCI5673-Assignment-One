@@ -42,9 +42,20 @@ class SellerServer:
     def sell_item(self, data: dict) -> dict:
         """
         Adds the item to the product database and the item's
-        ID to the list of items for sale by this user.
+        ID to the list of items for sale by this user. Returns
+        the IDs of the items added.
         """
-        raise NotImplementedError
+        # Add the items and get a list of item ids
+        prodDB_resp = self.handler.sendrecv('product_db', data)
+
+        # Packet to send to customer DB
+        custDB_req = {
+            'route': 'sell_item',
+            'ids': prodDB_resp['ids'],
+            'username': data['data']['seller']
+        }
+
+        return self.handler.sendrecv('customer_db', custDB_req)
 
     def _route_request(self, route: str):
         """

@@ -16,7 +16,7 @@ class TCPHandler:
             'customer_db': {'host': 'localhost', 'port': 65432},
             'seller_server': {'host': 'localhost', 'port': 65431},
             'buyer_server': {'host': 'localhost', 'port': None},
-            'products_db': {'host': 'localhost', 'port': None}
+            'product_db': {'host': 'localhost', 'port': 65430}
         }
 
     def get_conn(self, dest: str) -> socket.socket:
@@ -46,7 +46,7 @@ class TCPHandler:
         returns: A socket listening to the appropriate port.
         """
         if host not in ['customer_db', 'seller_server',
-                        'buyer_server', 'products_db']:
+                        'buyer_server', 'product_db']:
             raise ValueError("invalid host supplied")
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

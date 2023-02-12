@@ -12,17 +12,17 @@ class CustomerDB:
 
         Seller:
         {
-            'name': 'John Carmack',
+            'username': 'John Carmack',
             'id': 1,
             'feedback': {'pos': 10, 'neg': 0},
-            'items_sold': 4
+            'items_sold': [2, 3, 5, 4]
         }
 
         Buyer:
         {
-            'name': 'Andrej Karpathy',
+            'username': 'Andrej Karpathy',
             'id': 1,
-            'items_purchased': 4
+            'items_purchased': [2, 3]
         }
         """
         self.handler = TCPHandler()
@@ -41,7 +41,7 @@ class CustomerDB:
                 'password': data['password'],
                 'id': len(self.sellers) + 1,
                 'feedback': {'pos': 0, 'neg': 0},
-                'items_sold': 0
+                'items_sold': []
             })
         elif data['type'] == 'buyer':
             pass
@@ -81,6 +81,22 @@ class CustomerDB:
                 'status': 'Success',
                 'user': user_of_interest 
             }
+
+        return resp
+
+    def sell_item(self, data: dict) -> dict:
+        """
+        Append list of item ids for sale to user's database
+        entry.
+        """
+        for seller in self.sellers:
+            if seller['username'] == data['username']:
+                seller['items_sold'] += data['ids']
+
+        resp = {
+            'status': 'Success: Items listed successfully',
+            'ids': data['ids']
+        }
 
         return resp
 

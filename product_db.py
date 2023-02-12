@@ -1,4 +1,5 @@
 import socket
+import copy
 from utils import TCPHandler
 
 
@@ -29,7 +30,20 @@ class ProductDB:
         :returns: A list of item IDs corresponding to the 
                   items just added.
         """
-        raise NotImplementedError
+        item = data['data']
+        quantity = item['quantity']
+        del item['quantity']
+        
+        item_ids = []
+        for _ in range(quantity):
+            item_copy = copy.deepcopy(item)
+            _id = len(self.products) + 1
+            item_copy['id'] = _id
+            item_ids.append(_id)
+            self.products.append(item_copy)
+
+        return {'status': 'Sucess: Items listed.', 'ids': item_ids}
+
 
     def _route_request(self, route: str):
         """
@@ -66,3 +80,8 @@ class ProductDB:
             # No longer need that connection
             new_sock.close()
             print(f"Disconnected from {client_addr}.")
+
+
+if __name__ == "__main__":
+    product_db = ProductDB()
+    product_db.serve()

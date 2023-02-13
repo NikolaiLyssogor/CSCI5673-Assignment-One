@@ -1,2 +1,4 @@
-# CSCI5673-Assignment-One
-A simple e-commerce site build using TCP/IP
+# CSCI 5673 Programming Assignment One
+This is a simple e-commerce website for the University of Colorado Boulder's Distributed Systems class, CSCI 5673. The server is written using TCP/IP based sockets. The website has two modes: One where the site can be run interactively through the terminal, and another where the user inputs are automated for performance testing. In the performance testing mode, there is an 0.5 second delay between consecitive client requests. This was done to make the simulation somewhat lifelike while still not taking too long. Each client request uses a seperate TCP connection. This was done to make coding it simpler, though almost certainly at the cost of performance. 
+
+All methods outlined in the assignment description were implemented with the exception of `make_purchase` and `provide_feedback`, the latter because it didn't make sense to write if the former wasn't written. 

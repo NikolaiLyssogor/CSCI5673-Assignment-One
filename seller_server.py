@@ -5,6 +5,7 @@ class SellerServer:
 
     def __init__(self):
         self.handler = TCPHandler()
+        self.n_requests = 0
     
     def create_account(self, data: dict) -> dict:
         """
@@ -53,6 +54,9 @@ class SellerServer:
     def list_items(self, data: dict) -> dict:
         return self.handler.sendrecv('product_db', data)
 
+    def get_request_count(self, data: dict) -> dict:
+        return {'requests': self.n_requests}
+
     def _route_request(self, route: str):
         """
         Returns the appropriate function if it exists,
@@ -76,6 +80,7 @@ class SellerServer:
             # Accept a new request from a client
             new_sock, client_addr = seller_socket.accept()
             print(f"Accepted connection from {client_addr}.\n")
+            self.n_requests += 1
             data = self.handler.recv(new_sock)
 
             # Figure out what function was called from the header and call it

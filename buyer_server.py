@@ -5,6 +5,7 @@ class BuyerServer:
 
     def __init__(self):
         self.handler = TCPHandler()
+        self.n_requests = 0
     
     def create_account(self, data: dict) -> dict:
         """
@@ -107,8 +108,8 @@ class BuyerServer:
             db_req = {'route': 'search'}
             products = self.handler.sendrecv('product_db', db_req)['data']
         except:
-            print("Error connecting buyer server to customer database.")
-            return {'status': 'Error: Cannot connect buyer server to customer database.'}
+            print("Error connecting buyer server to product database.")
+            return {'status': 'Error: Cannot connect buyer server to product database.'}
         else:
             buyers_products = []
             for product in products:
@@ -120,6 +121,9 @@ class BuyerServer:
                 'data': buyers_products
             }
             return resp
+
+    def get_request_count(self, data: dict) -> dict:
+        return {'requests': self.n_requests}
 
     def _route_request(self, route: str):
         """
@@ -145,6 +149,7 @@ class BuyerServer:
             # Accept a new request from a client
             new_sock, client_addr = seller_socket.accept()
             print(f"Accepted connection from {client_addr}.\n")
+            self.n_requests += 1
             data = self.handler.recv(new_sock)
 
             # Figure out what function was called from the header and call it

@@ -113,7 +113,7 @@ class ProductDB:
             else:
                 response = {'staus': 'Error: Invalid database route.'}
 
-            # Send the response and check for errors in doing so
+            # Send the response
             self.handler.send(new_sock, response)
 
             # No longer need that connection

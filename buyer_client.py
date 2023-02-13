@@ -57,25 +57,25 @@ class BuyerClient:
             else:
                 username, password = self.benchmarker.get_username_and_password()
 
-                data = {
-                    'route': 'create_account',
-                    'type': 'buyer',
-                    'username': username,
-                    'password': password
-                }
+            data = {
+                'route': 'create_account',
+                'type': 'buyer',
+                'username': username,
+                'password': password
+            }
 
-                # Call the handler to send request and receive response
-                start = time.time()
-                resp = self.handler.sendrecv(dest='buyer_server', data=data)
-                end = time.time()
+            # Call the handler to send request and receive response
+            start = time.time()
+            resp = self.handler.sendrecv(dest='buyer_server', data=data)
+            end = time.time()
 
-                if not self.debug:
-                    self.benchmarker.log_response_time(end-start)
+            if not self.debug:
+                self.benchmarker.log_response_time(end-start)
 
-                if 'Success' in resp['status']:
-                    print("\nAccount created successfully!")
-                else:
-                    print(resp['status'])
+            if 'Success' in resp['status']:
+                print("\nAccount created successfully!")
+            else:
+                print(resp['status'])
 
     def login(self):
         """
@@ -199,9 +199,12 @@ class BuyerClient:
             except:
                 print("\nThere was a problem with the server. Please try again.")
             else:
-                # Add the item to the cart
-                self.cart.append(resp['data'])
-                print(f"\nItem with ID {item_id} ({resp['data']['name']}) was added to the cart.")
+                if 'Error' in resp['status']:
+                    print("\nThere is no item with that ID. Please try another.")
+                else:
+                    # Add the item to the cart
+                    self.cart.append(resp['data'])
+                    print(f"\nItem with ID {item_id} ({resp['data']['name']}) was added to the cart.")
 
     def remove_item_from_cart(self):
         """
@@ -287,13 +290,15 @@ class BuyerClient:
         except:
             print("\nThere was a problem with the server. Please try again.")
         else:
-            print(resp)
-            if not resp['data']:
-                print("\nYou have not made any purchases.")
+            if 'Error' in resp['status']:
+                print(resp['status'])
             else:
-                for purchase in resp['data']:
-                    print("")
-                    pp.pprint(purchase)
+                if not resp['data']:
+                    print("\nYou have not made any purchases.")
+                else:
+                    for purchase in resp['data']:
+                        print("")
+                        pp.pprint(purchase)
 
     def _get_route(self, route: str):
         return self.routes[route]
@@ -322,17 +327,27 @@ class BuyerClient:
                 self.routes[action]()
         else:
             self.create_account()
-            time.sleep(0.01)
+            time.sleep(0.5)
             self.login()
-            time.sleep(0.01)
-            for _ in range(125):
+            time.sleep(0.5)
+            for _ in range(150):
                 self.search()
-                time.sleep(0.01)
+                time.sleep(0.5)
                 self.add_item_to_cart()
-                time.sleep(0.01)
+                time.sleep(0.5)
                 self.get_seller_rating_by_id()
-                time.sleep(0.01)
+                time.sleep(0.5)
                 self.get_purchase_history()
+                time.sleep(0.5)
+            
+            # Print average response time
+            avg_response_time = self.benchmarker.compute_average_response_time()
+            print("#######################################")
+            print(f"Buyer average response time: {avg_response_time}")
+            print("***************************************")
+
+            with open('art_dump.txt', 'a') as f:
+                f.write(str(avg_response_time) + '\n')
 
 
 if __name__ == "__main__":

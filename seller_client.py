@@ -284,18 +284,27 @@ class SellerClient:
         else:
             # Calls functions in a predetermined order
             self.create_account()
-            time.sleep(0.01)
+            time.sleep(0.5)
             self.login()
-            time.sleep(0.01)
+            time.sleep(0.5)
             for _ in range(600):
                 self.sell_item()
-                time.sleep(0.01)
+                time.sleep(0.5)
             for _ in range(300):
                 self.remove_item()
-                time.sleep(0.02)
+                time.sleep(0.5)
             for _ in range(98):
                 self.list_items()
-                time.sleep(0.01)
+                time.sleep(0.5)
+
+            # Print average response time
+            avg_response_time = self.benchmarker.compute_average_response_time()
+            print("#######################################")
+            print(f"Seller average response time: {avg_response_time}")
+            print("***************************************")
+
+            with open('art_dump.txt', 'a') as f:
+                f.write(str(avg_response_time) + '\n')
 
 
 
